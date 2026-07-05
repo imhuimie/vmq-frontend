@@ -74,6 +74,7 @@ import { ref, computed } from 'vue'
 import { ElMessage, UploadFile } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { VmqService } from '@/api/vmqApi'
+import { validateImageDimensions, validateImageFile } from '@/utils/security'
 import jsQR from 'jsqr'
 
 interface QrcodeItem {
@@ -102,10 +103,22 @@ const canSave = computed(() => {
 // 处理文件变化 - 新的前端解码逻辑
 const handleChange = (file: UploadFile) => {
   if (file.raw) {
+    const fileError = validateImageFile(file.raw)
+    if (fileError) {
+      ElMessage.error(fileError)
+      return
+    }
+
     const reader = new FileReader()
     reader.onload = (e) => {
       const img = new Image()
       img.onload = () => {
+        const dimensionError = validateImageDimensions(img)
+        if (dimensionError) {
+          ElMessage.error(dimensionError)
+          return
+        }
+
         const canvas = document.createElement('canvas')
         const context = canvas.getContext('2d')
         if (!context) {

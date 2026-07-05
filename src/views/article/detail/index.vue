@@ -12,6 +12,7 @@
   import '@/assets/styles/markdown.scss'
   import '@/assets/styles/one-dark-pro.scss'
   import { useCommon } from '@/composables/useCommon'
+  import { sanitizeHtml } from '@/utils/security'
   import axios from 'axios'
   // import 'highlight.js/styles/atom-one-dark.css';
   // import 'highlight.js/styles/vs2015.css';
@@ -34,7 +35,7 @@
       const res = await axios.get('https://www.qiniu.lingchen.kim/blog_detail.json')
       if (res.data.code === 200) {
         articleTitle.value = res.data.data.title
-        articleHtml.value = res.data.data.html_content
+        articleHtml.value = sanitizeHtml(res.data.data.html_content)
       }
     }
   }

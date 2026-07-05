@@ -108,6 +108,7 @@
   import { ref, reactive, onMounted } from 'vue'
   import { ElMessage, type FormInstance, type UploadFile, type UploadProps } from 'element-plus'
   import { VmqService } from '@/api/vmqApi'
+  import { validateImageDimensions, validateImageFile } from '@/utils/security'
   import jsQR from 'jsqr'
 
   // --- State and Data ---
@@ -218,26 +219,33 @@
   }
 
   const beforeQrcodeUpload: UploadProps['beforeUpload'] = (rawFile) => {
-    const isJpgOrPng = rawFile.type === 'image/jpeg' || rawFile.type === 'image/png'
-    if (!isJpgOrPng) {
-      ElMessage.error('二维码图片只支持 JPG/PNG 格式!')
+    const error = validateImageFile(rawFile)
+    if (error) {
+      ElMessage.error(error)
       return false
     }
-    const isLt2M = rawFile.size / 1024 / 1024 < 2
-    if (!isLt2M) {
-      ElMessage.error('二维码图片大小不能超过 2MB!')
-      return false
-    }
-    return isJpgOrPng && isLt2M
+    return true
   }
 
   // --- Utility Functions ---
   const decodeQrcode = (file: UploadFile, callback: (url: string) => void) => {
     if (file.raw) {
+      const fileError = validateImageFile(file.raw)
+      if (fileError) {
+        ElMessage.error(fileError)
+        return
+      }
+
       const reader = new FileReader()
       reader.onload = (e) => {
         const img = new Image()
         img.onload = () => {
+          const dimensionError = validateImageDimensions(img)
+          if (dimensionError) {
+            ElMessage.error(dimensionError)
+            return
+          }
+
           const canvas = document.createElement('canvas')
           const context = canvas.getContext('2d', { willReadFrequently: true })
           if (!context) {

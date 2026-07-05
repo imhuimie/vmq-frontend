@@ -59,6 +59,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Loading } from '@element-plus/icons-vue'
 import { PaymentService, OrderInfo } from '@/api/paymentApi'
+import { getSafeRedirectUrl } from '@/utils/security'
 
 const route = useRoute()
 const router = useRouter()
@@ -111,7 +112,7 @@ const handleAutoRedirect = async () => {
       // 延迟1秒后跳转，让用户看到成功信息
       setTimeout(() => {
         console.log('跳转到后端生成的返回URL:', response.returnUrl)
-        window.location.href = response.returnUrl
+        redirectToSafeUrl(response.returnUrl)
       }, 1000)
     } else {
       // 如果API返回失败，尝试使用URL参数中的returnUrl
@@ -119,7 +120,7 @@ const handleAutoRedirect = async () => {
         redirectMessage.value = '即将跳转到商户网站...'
         setTimeout(() => {
           console.log('使用URL参数中的返回URL:', returnUrl)
-          window.location.href = returnUrl
+          redirectToSafeUrl(returnUrl)
         }, 1000)
       } else {
         throw new Error('无法获取有效的返回URL')
@@ -135,10 +136,20 @@ const handleAutoRedirect = async () => {
 // 返回商户网站（备用方法，现在主要用于失败情况）
 const goToMerchant = () => {
   if (returnUrl) {
-    window.location.href = returnUrl
+    redirectToSafeUrl(returnUrl)
   } else {
     window.history.back()
   }
+}
+
+const redirectToSafeUrl = (url: string) => {
+  const safeUrl = getSafeRedirectUrl(url)
+  if (!safeUrl) {
+    redirectMessage.value = '跳转地址不在允许范围内'
+    ElMessage.warning('跳转地址不在允许范围内')
+    return
+  }
+  window.location.href = safeUrl
 }
 
 // 重新支付

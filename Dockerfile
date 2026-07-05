@@ -49,6 +49,13 @@ server {
     
     # 项目根目录
     root /usr/share/nginx/html;
+
+    # 安全响应头
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "geolocation=(), camera=(), microphone=()" always;
+    add_header X-Frame-Options "DENY" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; img-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline'; connect-src 'self' https:;" always;
     
     # 启用 gzip 压缩
     gzip on;

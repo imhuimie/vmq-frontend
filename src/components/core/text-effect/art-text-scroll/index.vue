@@ -24,6 +24,7 @@
 <script setup lang="ts">
   import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
   import { useElementHover } from '@vueuse/core'
+  import { sanitizeHtml } from '@/utils/security'
 
   defineOptions({ name: 'ArtTextScroll' })
 
@@ -77,7 +78,9 @@
   })
 
   // 修改 sanitizedContent 计算属性
-  const sanitizedContent = computed(() => (props.typewriter ? currentText.value : props.text))
+  const sanitizedContent = computed(() =>
+    sanitizeHtml(props.typewriter ? currentText.value : props.text)
+  )
 
   // 修改 scrollStyle 计算属性
   const scrollStyle = computed(() => ({

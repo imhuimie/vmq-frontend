@@ -55,7 +55,7 @@
           <h3>完整编辑器内容</h3>
           <el-tabs v-model="fullActiveTab">
             <el-tab-pane label="渲染效果" name="preview">
-              <div class="content-preview" v-html="fullEditorHtml"></div>
+              <div class="content-preview" v-html="sanitizedFullEditorHtml"></div>
             </el-tab-pane>
             <el-tab-pane label="HTML源码" name="html">
               <el-input
@@ -73,7 +73,7 @@
           <h3>简化编辑器内容</h3>
           <el-tabs v-model="simpleActiveTab">
             <el-tab-pane label="渲染效果" name="preview">
-              <div class="content-preview" v-html="simpleEditorHtml"></div>
+              <div class="content-preview" v-html="sanitizedSimpleEditorHtml"></div>
             </el-tab-pane>
             <el-tab-pane label="HTML源码" name="html">
               <el-input
@@ -211,8 +211,9 @@ const handleGetContent = () =&gt; {
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue'
+  import { computed, ref } from 'vue'
   import { ElMessage } from 'element-plus'
+  import { sanitizeHtml } from '@/utils/security'
 
   // 编辑器引用
   const fullEditorRef = ref()
@@ -315,6 +316,9 @@ function createEditor() {
 <p>支持插入 <a href="https://www.wangeditor.com/" target="_blank">链接</a> 和图片。</p>
 
 <p>简化版编辑器专注于基础功能，适合简单的内容编辑需求。</p>`)
+
+  const sanitizedFullEditorHtml = computed(() => sanitizeHtml(fullEditorHtml.value))
+  const sanitizedSimpleEditorHtml = computed(() => sanitizeHtml(simpleEditorHtml.value))
 
   // 完整编辑器操作
   const clearFullEditor = () => {

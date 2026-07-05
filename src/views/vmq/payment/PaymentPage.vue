@@ -107,6 +107,7 @@
   import QrCode from './QrCode.vue'
   import PaymentCountdown from './PaymentCountdown.vue'
   import { PaymentService, OrderInfo } from '@/api/paymentApi'
+  import { getSafeRedirectUrl } from '@/utils/security'
 
   const route = useRoute()
   const router = useRouter()
@@ -275,17 +276,26 @@
       if (response && response.returnUrl) {
         // 使用后端生成的带签名的返回URL
         console.log('跳转到后端生成的返回URL:', response.returnUrl)
-        window.location.href = response.returnUrl
+        redirectToSafeUrl(response.returnUrl)
       } else {
         // 如果API返回失败，使用原始的重定向URL
         console.warn('API未返回有效的返回URL，使用原始重定向URL')
-        window.location.href = redirectUrl
+        redirectToSafeUrl(redirectUrl)
       }
     } catch (error) {
       console.error('获取带签名的返回URL失败，使用原始重定向URL:', error)
       // 发生错误时使用原始的重定向URL
-      window.location.href = redirectUrl
+      redirectToSafeUrl(redirectUrl)
     }
+  }
+
+  const redirectToSafeUrl = (url: string) => {
+    const safeUrl = getSafeRedirectUrl(url)
+    if (!safeUrl) {
+      ElMessage.warning('跳转地址不在允许范围内')
+      return
+    }
+    window.location.href = safeUrl
   }
 
   // 启动自动刷新定时器

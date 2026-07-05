@@ -15,7 +15,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 export default ({ mode }) => {
   const root = process.cwd()
   const env = loadEnv(mode, root)
-  const { VITE_VERSION, VITE_PORT, VITE_BASE_URL, VITE_VMQ_API_URL } = env
+  const { VITE_VERSION, VITE_PORT, VITE_BASE_URL, VITE_VMQ_API_URL, VITE_DEV_HOST } = env
 
   // 从 VITE_VMQ_API_URL 提取后端服务地址，默认为 localhost:8080
   const backendUrl =
@@ -45,7 +45,7 @@ export default ({ mode }) => {
           changeOrigin: true
         }
       },
-      host: true
+      host: VITE_DEV_HOST || '127.0.0.1'
     },
     // 路径别名
     resolve: {
@@ -164,8 +164,8 @@ export default ({ mode }) => {
       //     ]
       //   }
       // })
-      vueDevTools()
-    ],
+      mode === 'development' && vueDevTools()
+    ].filter(Boolean),
     // 预加载项目必需的组件
     optimizeDeps: {
       include: [
